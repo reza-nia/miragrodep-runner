@@ -110,14 +110,6 @@ exports.handler = async function(event, context) {
     });
 
 
-    // Set branch name
-    const currentBranch = process.env.BRANCH;
-    if (!currentBranch) {
-      throw new Error('Branch name not found in environment variables');
-    }
-    
-
-
 
     // Trigger the workflow
     await octokit.actions.createWorkflowDispatch({
