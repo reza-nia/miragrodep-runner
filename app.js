@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorMessage = document.getElementById('errorMessage');
     
     // The API endpoint - update this to your Netlify domain
-    const API_URL = 'https://your-netlify-app.netlify.app/api/trigger-workflow';
+    const API_URL = 'https://miragrodep-runner.netlify.app/api/trigger-workflow';
     
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
