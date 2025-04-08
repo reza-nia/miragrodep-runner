@@ -112,7 +112,7 @@ exports.handler = async function(event, context) {
     await octokit.actions.createWorkflowDispatch({
       owner: 'reza-nia',
       repo: 'miragrodep-3',
-      workflow_id: 'run-miragrodep.yml',
+      workflow_id: 'run-miragrodep-model.yml',
       ref: 'main', // or the branch your workflow is on
       inputs: inputs
     });
@@ -121,7 +121,7 @@ exports.handler = async function(event, context) {
     const { data: runs } = await octokit.actions.listWorkflowRuns({
       owner: 'reza-nia',
       repo: 'miragrodep-3',
-      workflow_id: 'run-miragrodep.yml',
+      workflow_id: 'run-miragrodep-model.yml',
       per_page: 1
     });
     
