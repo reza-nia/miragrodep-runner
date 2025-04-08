@@ -5,6 +5,11 @@ const { Octokit } = require("@octokit/rest");
 const GITHUB_TOKEN = process.env.GITHUB_PAT;
 
 exports.handler = async function(event, context) {
+  // Set branch name
+  const currentBranch = process.env.BRANCH;
+  if (!currentBranch) {
+  throw new Error('Branch name not found in environment variables');
+  }
   // Enable CORS for GitHub Pages
   const headers = {
     "Access-Control-Allow-Origin": "*", 
