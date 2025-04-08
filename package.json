@@ -1,0 +1,9 @@
+{
+  "name": "miragrodep-runner",
+  "version": "1.0.0",
+  "description": "Interface for running MirAgroDep model workflows",
+  "main": "index.html",
+  "dependencies": {
+    "@octokit/rest": "^19.0.13"
+  }
+}
