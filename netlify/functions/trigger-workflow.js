@@ -9,7 +9,7 @@ exports.handler = async function(event, context) {
   const currentBranch = process.env.BRANCH;
   if (!currentBranch) {
   throw new Error('Branch name not found in environment variables');
-  }
+  };
   // Enable CORS for GitHub Pages
   const headers = {
     "Access-Control-Allow-Origin": "*", 
