@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorAlert = document.getElementById('errorAlert');
     const errorMessage = document.getElementById('errorMessage');
     
-    // The API endpoint to trigger the workflow
-    const API_URL = 'https://api.github.com/repos/reza-nia/miragrodep-3/actions/workflows/run-miragrodep.yml/dispatches';
+    // The API endpoint - update this to your Netlify domain
+    const API_URL = 'https://your-netlify-app.netlify.app/api/trigger-workflow';
     
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -21,45 +21,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(form);
         const inputs = Object.fromEntries(formData.entries());
         
-        // Format the payload for GitHub API
-        const payload = {
-            ref: 'main', // or whatever branch your workflow is on
-            inputs: {
-                run_mode: inputs.run_mode,
-                agg: inputs.agg,
-                case: inputs.case,
-                proj: inputs.proj,
-                baseline: inputs.baseline,
-                sim1: inputs.sim1,
-                totalSims: inputs.totalSims,
-                maxSimultaneous: inputs.maxSimultaneous,
-                diag: inputs.diag,
-                pov: inputs.pov
-            }
-        };
+        // Extract email for notifications
+        const email = inputs.email;
+        delete inputs.email;
         
         try {
-            // This would normally be done server-side to protect your token
-            // For demonstration; in production this should be handled by a serverless function
-            const accessToken = await getAccessToken();
-            
+            // Call the Netlify function
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `token ${accessToken}`,
-                    'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    inputs: inputs,
+                    email: email
+                })
             });
             
             if (!response.ok) {
-                throw new Error(`Error ${response.status}: ${await response.text()}`);
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Error ${response.status}`);
             }
             
-            // Since workflow_dispatch doesn't return the run ID directly,
-            // we need to query for the latest run
-            const latestRun = await getLatestWorkflowRun(accessToken);
+            const data = await response.json();
             
             // Hide loading and show success
             loadingOverlay.classList.add('d-none');
@@ -70,55 +54,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p>Status: <span class="status-pending">Pending</span></p>
             `;
             
-            runDetails.innerHTML = `
-                <p><strong>Run ID:</strong> ${latestRun.id}</p>
-                <p><strong>Started at:</strong> ${new Date(latestRun.created_at).toLocaleString()}</p>
-                <div class="run-link">
-                    <a href="${latestRun.html_url}" target="_blank" class="btn btn-outline-primary">
-                        View Run on GitHub
-                    </a>
-                </div>
-            `;
+            if (data.run) {
+                runDetails.innerHTML = `
+                    <p><strong>Run ID:</strong> ${data.run.id}</p>
+                    <p><strong>Started at:</strong> ${new Date(data.run.created_at).toLocaleString()}</p>
+                    <div class="run-link">
+                        <a href="${data.run.html_url}" target="_blank" class="btn btn-outline-primary">
+                            View Run on GitHub
+                        </a>
+                    </div>
+                `;
+            } else {
+                runDetails.innerHTML = `
+                    <p>Run started successfully, but run details are not available.</p>
+                `;
+            }
             
             // Save email locally if provided
-            const email = inputs.email;
             if (email) {
                 localStorage.setItem('modelRunnerEmail', email);
-                // In a real implementation, you would store this email with the run ID
-                // and set up a notification system
             }
             
         } catch (err) {
             // Handle errors
             loadingOverlay.classList.add('d-none');
             errorAlert.classList.remove('d-none');
-            errorMessage.textContent = err.message;
+            errorMessage.textContent = err.message || "Unknown error occurred";
             console.error('Error starting workflow:', err);
         }
     });
-    
-    // This is a placeholder - in a real app, this would be handled server-side
-    // to protect your token
-    async function getAccessToken() {
-        // In production, this would call your backend API that securely stores the token
-        return 'YOUR_GITHUB_PAT_WILL_BE_HERE';
-    }
-    
-    async function getLatestWorkflowRun(token) {
-        const response = await fetch('https://api.github.com/repos/reza-nia/miragrodep-3/actions/runs?per_page=1', {
-            headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch workflow run information');
-        }
-        
-        const data = await response.json();
-        return data.workflow_runs[0];
-    }
     
     // Restore email from localStorage if it exists
     const savedEmail = localStorage.getItem('modelRunnerEmail');
