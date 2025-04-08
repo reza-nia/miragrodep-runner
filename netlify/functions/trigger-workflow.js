@@ -7,7 +7,7 @@ const GITHUB_TOKEN = process.env.GITHUB_PAT;
 exports.handler = async function(event, context) {
   // Enable CORS for GitHub Pages
   const headers = {
-    "Access-Control-Allow-Origin": "*", // Better to specify your GitHub Pages URL exactly
+    "Access-Control-Allow-Origin": "*", 
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Content-Type": "application/json"
@@ -22,6 +22,13 @@ exports.handler = async function(event, context) {
     };
   }
   
+  // Debug logging
+  console.log("Request received:", {
+    method: event.httpMethod,
+    headers: event.headers,
+    body: event.body ? event.body.substring(0, 500) : "No body"
+  });
+  
   try {
     if (event.httpMethod !== 'POST') {
       return {
@@ -31,30 +38,67 @@ exports.handler = async function(event, context) {
       };
     }
     
-    // Parse request body
-    let body;
-    try {
-      body = JSON.parse(event.body);
-    } catch (e) {
-      console.error("Error parsing request body:", e);
+    // Check if body exists
+    if (!event.body) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: "Invalid request body" })
+        body: JSON.stringify({ 
+          error: "Missing request body",
+          debug: "No body data provided" 
+        })
+      };
+    }
+    
+    // Parse request body with detailed error handling
+    let body;
+    try {
+      body = JSON.parse(event.body);
+      console.log("Successfully parsed body:", body);
+    } catch (e) {
+      console.error("Failed to parse request body:", e);
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ 
+          error: "Invalid request body", 
+          details: e.message,
+          receivedBody: event.body.substring(0, 200) // Show part of what was received
+        })
       };
     }
     
     const { inputs, email } = body;
     
-    // Log request for debugging
-    console.log("Received request:", { inputs, email });
-    
     // Basic validation
-    if (!inputs || !inputs.run_mode) {
+    if (!inputs) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: "Missing required parameters" })
+        body: JSON.stringify({ 
+          error: "Missing required parameters",
+          receivedBody: body 
+        })
+      };
+    }
+    
+    if (!inputs.run_mode) {
+      return {
+        statusCode: 400,
+        headers, 
+        body: JSON.stringify({ 
+          error: "Missing required parameter: run_mode",
+          receivedInputs: inputs
+        })
+      };
+    }
+    
+    // Check GitHub token
+    if (!GITHUB_TOKEN) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: "GitHub token is not configured" })
       };
     }
     
@@ -64,7 +108,7 @@ exports.handler = async function(event, context) {
     });
     
     // Log step for debugging
-    console.log("Triggering workflow dispatch...");
+    console.log("Triggering workflow dispatch with inputs:", inputs);
     
     // Trigger the workflow
     await octokit.actions.createWorkflowDispatch({
@@ -107,7 +151,8 @@ exports.handler = async function(event, context) {
       headers,
       body: JSON.stringify({ 
         error: "Failed to trigger workflow",
-        details: error.message 
+        details: error.message,
+        stack: error.stack
       })
     };
   }
