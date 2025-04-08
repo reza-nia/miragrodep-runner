@@ -23,6 +23,11 @@ exports.handler = async function(event, context) {
   }
   
   try {
+    // Get current branch from Netlify environment variable
+    // This is automatically set by Netlify during deployment
+    const currentBranch = process.env.BRANCH || 'main';
+    console.log(`Current branch: ${currentBranch}`);
+    
     if (event.httpMethod !== 'POST') {
       return {
         statusCode: 405,
@@ -108,20 +113,30 @@ exports.handler = async function(event, context) {
       auth: GITHUB_TOKEN
     });
     
-    // Trigger the workflow
+    // Prepare workflow inputs with email notification option
+    const workflowInputs = {
+      ...inputs,
+      // Add notification email if provided
+      notification_email: email || ""
+    };
+    
+    console.log(`Triggering workflow on branch: ${currentBranch}`);
+    
+    // Trigger the workflow using the current branch name
     await octokit.actions.createWorkflowDispatch({
       owner: 'reza-nia',
       repo: 'miragrodep-3',
       workflow_id: 'run-miragrodep-model.yml',
-      ref: 'cacheUse', // or the branch your workflow is on
-      inputs: inputs
+      ref: currentBranch, // Use the same branch name as the current deployment
+      inputs: workflowInputs
     });
     
-    // Get the latest run
+    // Get the latest run for this branch
     const { data: runs } = await octokit.actions.listWorkflowRuns({
       owner: 'reza-nia',
       repo: 'miragrodep-3',
       workflow_id: 'run-miragrodep-model.yml',
+      branch: currentBranch,
       per_page: 1
     });
     
@@ -130,6 +145,7 @@ exports.handler = async function(event, context) {
       headers,
       body: JSON.stringify({
         message: "Workflow triggered successfully",
+        branch: currentBranch,
         run: runs.workflow_runs.length > 0 ? runs.workflow_runs[0] : null
       })
     };
