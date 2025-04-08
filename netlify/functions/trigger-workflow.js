@@ -22,13 +22,6 @@ exports.handler = async function(event, context) {
     };
   }
   
-  // Debug logging
-  console.log("Request received:", {
-    method: event.httpMethod,
-    headers: event.headers,
-    body: event.body ? event.body.substring(0, 500) : "No body"
-  });
-  
   try {
     if (event.httpMethod !== 'POST') {
       return {
@@ -43,17 +36,23 @@ exports.handler = async function(event, context) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ 
-          error: "Missing request body",
-          debug: "No body data provided" 
-        })
+        body: JSON.stringify({ error: "Missing request body" })
       };
     }
     
-    // Parse request body with detailed error handling
+    // Parse request body with Base64 detection and decoding
     let body;
     try {
-      body = JSON.parse(event.body);
+      // Check if body looks like Base64 (starts with eyJ which is common for encoded JSON)
+      if (event.body.startsWith('eyJ')) {
+        console.log("Detected Base64 encoded body, decoding...");
+        const decoded = Buffer.from(event.body, 'base64').toString('utf8');
+        console.log("Decoded body:", decoded);
+        body = JSON.parse(decoded);
+      } else {
+        // Try standard JSON parsing
+        body = JSON.parse(event.body);
+      }
       console.log("Successfully parsed body:", body);
     } catch (e) {
       console.error("Failed to parse request body:", e);
@@ -63,7 +62,7 @@ exports.handler = async function(event, context) {
         body: JSON.stringify({ 
           error: "Invalid request body", 
           details: e.message,
-          receivedBody: event.body.substring(0, 200) // Show part of what was received
+          receivedBody: event.body.substring(0, 200)
         })
       };
     }
@@ -102,13 +101,12 @@ exports.handler = async function(event, context) {
       };
     }
     
+    console.log("Inputs for workflow:", inputs);
+    
     // Initialize Octokit with the GitHub token
     const octokit = new Octokit({
       auth: GITHUB_TOKEN
     });
-    
-    // Log step for debugging
-    console.log("Triggering workflow dispatch with inputs:", inputs);
     
     // Trigger the workflow
     await octokit.actions.createWorkflowDispatch({
@@ -119,8 +117,6 @@ exports.handler = async function(event, context) {
       inputs: inputs
     });
     
-    console.log("Workflow triggered, getting latest run...");
-    
     // Get the latest run
     const { data: runs } = await octokit.actions.listWorkflowRuns({
       owner: 'reza-nia',
@@ -128,12 +124,6 @@ exports.handler = async function(event, context) {
       workflow_id: 'run-miragrodep.yml',
       per_page: 1
     });
-    
-    // If provided, store email for notifications (would integrate with a notification system)
-    if (email && runs.workflow_runs.length > 0) {
-      console.log(`Email ${email} registered for run ${runs.workflow_runs[0].id}`);
-      // In a full implementation, you would store this mapping in a database
-    }
     
     return {
       statusCode: 200,
@@ -151,8 +141,7 @@ exports.handler = async function(event, context) {
       headers,
       body: JSON.stringify({ 
         error: "Failed to trigger workflow",
-        details: error.message,
-        stack: error.stack
+        details: error.message
       })
     };
   }
