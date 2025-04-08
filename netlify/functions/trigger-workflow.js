@@ -5,10 +5,11 @@ const { Octokit } = require("@octokit/rest");
 const GITHUB_TOKEN = process.env.GITHUB_PAT;
 
 exports.handler = async function(event, context) {
-  // Enable CORS
+  // Enable CORS for GitHub Pages
   const headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Origin": "*", // Better to specify your GitHub Pages URL exactly
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Content-Type": "application/json"
   };
   
@@ -31,8 +32,22 @@ exports.handler = async function(event, context) {
     }
     
     // Parse request body
-    const body = JSON.parse(event.body);
+    let body;
+    try {
+      body = JSON.parse(event.body);
+    } catch (e) {
+      console.error("Error parsing request body:", e);
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: "Invalid request body" })
+      };
+    }
+    
     const { inputs, email } = body;
+    
+    // Log request for debugging
+    console.log("Received request:", { inputs, email });
     
     // Basic validation
     if (!inputs || !inputs.run_mode) {
@@ -48,6 +63,9 @@ exports.handler = async function(event, context) {
       auth: GITHUB_TOKEN
     });
     
+    // Log step for debugging
+    console.log("Triggering workflow dispatch...");
+    
     // Trigger the workflow
     await octokit.actions.createWorkflowDispatch({
       owner: 'reza-nia',
@@ -56,6 +74,8 @@ exports.handler = async function(event, context) {
       ref: 'main', // or the branch your workflow is on
       inputs: inputs
     });
+    
+    console.log("Workflow triggered, getting latest run...");
     
     // Get the latest run
     const { data: runs } = await octokit.actions.listWorkflowRuns({
