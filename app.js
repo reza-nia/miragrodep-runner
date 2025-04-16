@@ -37,14 +37,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Also validate on page load
     validateForm();
     
-    // The API endpoint - update this to your Netlify domain
-    const API_URL = 'https://miragrodep-runner.netlify.app/api/trigger-workflow';
+    // The API endpoint - using relative path for Netlify functions
+    const API_URL = '/.netlify/functions/trigger-workflow';
     
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        // Show loading overlay
+        // Show loading overlay with initial message
         loadingOverlay.classList.remove('d-none');
+        document.querySelector('.loading-text').textContent = "Starting model run...";
         errorAlert.classList.add('d-none');
         
         // Collect form data
@@ -69,6 +70,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const email = inputsObj.email;
         delete inputsObj.email;
         
+        // Save email locally if provided
+        if (email) {
+            localStorage.setItem('modelRunnerEmail', email);
+        }
+        
         try {
             // Call the Netlify function
             const response = await fetch(API_URL, {
@@ -88,17 +94,32 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const data = await response.json();
+            console.log("Response from server:", data);
+            
+            // Update loading message to indicate initialization phase
+            document.querySelector('.loading-text').textContent = "Initializing GitHub workflow (please wait 10 seconds)...";
+            
+            // Add delay before attempting to fetch run information
+            await new Promise(resolve => setTimeout(resolve, 10000)); // 10 second delay
+            
+            document.querySelector('.loading-text').textContent = "Retrieving workflow status...";
             
             // Hide loading and show success
             loadingOverlay.classList.add('d-none');
             resultCard.classList.remove('d-none');
             
-            statusMessage.innerHTML = `
-                <p>Model run started successfully!</p>
-                <p>Status: <span class="status-pending">Pending</span></p>
-            `;
-            
-            if (data.run) {
+            if (data.run && data.run.id) {
+                // Format the status display based on run status
+                const statusClass = data.run.status === "completed" ? "success" : 
+                               (data.run.status === "in_progress" || data.run.status === "queued") ? "info" : "warning";
+                
+                statusMessage.innerHTML = `
+                    <div class="alert alert-${statusClass}">
+                        <p><strong>Model run started successfully!</strong></p>
+                        <p><strong>Status:</strong> ${data.run.status || "Pending"}</p>
+                    </div>
+                `;
+                
                 runDetails.innerHTML = `
                     <p><strong>Run ID:</strong> ${data.run.id}</p>
                     <p><strong>Started at:</strong> ${new Date(data.run.created_at).toLocaleString()}</p>
@@ -109,14 +130,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
             } else {
-                runDetails.innerHTML = `
-                    <p>Run started successfully, but run details are not available.</p>
+                // If no run info yet, provide direct link to Actions page
+                const repoOwner = "reza-nia";
+                const repoName = "miragrodep-3";
+                const actionsUrl = `https://github.com/${repoOwner}/${repoName}/actions`;
+                
+                statusMessage.innerHTML = `
+                    <div class="alert alert-info">
+                        <p><strong>Workflow triggered successfully!</strong></p>
+                        <p>Your model run has been started.</p>
+                    </div>
                 `;
-            }
-            
-            // Save email locally if provided
-            if (email) {
-                localStorage.setItem('modelRunnerEmail', email);
+                
+                runDetails.innerHTML = `
+                    <p>Run details are not yet available. This is normal when a workflow is just starting.</p>
+                    <div class="run-link mt-3">
+                        <a href="${actionsUrl}" target="_blank" class="btn btn-outline-primary">
+                            View All Runs on GitHub Actions
+                        </a>
+                    </div>
+                `;
             }
             
         } catch (err) {
