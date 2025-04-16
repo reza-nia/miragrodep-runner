@@ -165,7 +165,7 @@ exports.handler = async function(event, context) {
     
     // IMPORTANT: Add delay here to allow GitHub to register the new run
     console.log("Waiting for 30 seconds to allow GitHub to register the new run...");
-    await new Promise(resolve => setTimeout(resolve, 9000)); // 15-second delay
+    await new Promise(resolve => setTimeout(resolve, 9000)); // 9-second delay
     
     console.log("Delay complete, now fetching latest workflow run...");
     
