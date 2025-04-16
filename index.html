@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MirAgroDep Model Runner</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,12 +28,10 @@
                             
                             <div class="mb-3">
                                 <label for="agg" class="form-label">Aggregation Level</label>
-                                <input type="text" class="form-control" id="agg" name="agg" value="11" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="case" class="form-label">Case Type (e.g., TAR)</label>
-                                <input type="text" class="form-control" id="case" name="case" value="TAR" required>
+                                <select class="form-select" id="agg" name="agg" required>
+                                    <option value="AggT1">AggT1</option>
+                                    <option value="AggT2">AggT2</option>
+                                </select>
                             </div>
                             
                             <div class="mb-3">
@@ -41,23 +40,50 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="baseline" class="form-label">Baseline Scenario</label>
-                                <input type="text" class="form-control" id="baseline" name="baseline" value="df" required>
+                                <label for="regions" class="form-label">Regions</label>
+                                <select class="form-select select2-multi" id="regions" name="regions[]" multiple required>
+                                    <option value="OCEANIA">OCEANIA - Australia, New Zealand, and other Oceania</option>
+                                    <option value="CHINA">CHINA - China and Hong Kong</option>
+                                    <option value="REASIA">REASIA - Japan, South Korea, Taiwan</option>
+                                    <option value="RoCIS">RoCIS - Rest of Commonwealth of Independent States (Belarus, Serbia, etc.)</option>
+                                    <option value="RoAsia">RoAsia - Rest of Asia (Singapore, Malaysia, Nepal, etc.)</option>
+                                    <option value="IDN">IDN - Indonesia</option>
+                                    <option value="PHL">PHL - Philippines</option>
+                                    <option value="THA">THA - Thailand</option>
+                                    <option value="VNM">VNM - Vietnam</option>
+                                    <option value="BGD">BGD - Bangladesh</option>
+                                    <option value="IND">IND - India</option>
+                                    <option value="PAK">PAK - Pakistan</option>
+                                    <option value="CAN">CAN - Canada</option>
+                                    <option value="USA">USA - United States and territories</option>
+                                    <option value="MEX">MEX - Mexico</option>
+                                    <option value="ARG">ARG - Argentina</option>
+                                    <option value="Andean">Andean - Bolivia, Chile, Colombia, Ecuador, Peru</option>
+                                    <option value="BRA">BRA - Brazil</option>
+                                    <option value="RoMERCO">RoMERCO - Paraguay, Uruguay</option>
+                                    <option value="RoLAC">RoLAC - Venezuela, Dominican Republic, Jamaica, Haiti, etc.</option>
+                                    <option value="CAM">CAM - Costa Rica, Guatemala, Honduras, Nicaragua, Panama, etc.</option>
+                                    <option value="EU28">EU28 - 28 European Union member countries</option>
+                                    <option value="RoEFTA">RoEFTA - Norway, Switzerland, and other EFTA</option>
+                                    <option value="RUS">RUS - Russia</option>
+                                    <option value="UKR">UKR - Ukraine</option>
+                                    <option value="KAZ">KAZ - Kazakhstan</option>
+                                    <option value="RoMENA">RoMENA - Middle East & North Africa (Iran, Saudi Arabia, UAE, etc.)</option>
+                                    <option value="TUR">TUR - Turkey</option>
+                                    <option value="EGY">EGY - Egypt</option>
+                                    <option value="RoWCAfr">RoWCAfr - West & Central Africa (Ghana, Senegal, Cameroon, etc.)</option>
+                                    <option value="NGA">NGA - Nigeria</option>
+                                    <option value="ETH">ETH - Ethiopia</option>
+                                    <option value="EAFRICA">EAFRICA - East Africa (Kenya, Tanzania, Uganda, etc.)</option>
+                                    <option value="SACU">SACU - Southern African Customs Union (South Africa, Botswana, Namibia, etc.)</option>
+                                </select>
+                                <div class="form-text">Select one or more regions for the simulation</div>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="sim1" class="form-label">First Simulation Scenario</label>
-                                <input type="text" class="form-control" id="sim1" name="sim1" value="BASE" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="totalSims" class="form-label">Total Number of Simulations</label>
-                                <input type="number" class="form-control" id="totalSims" name="totalSims" value="1" min="1" max="10" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="maxSimultaneous" class="form-label">Max Simultaneous GAMS Processes</label>
-                                <input type="number" class="form-control" id="maxSimultaneous" name="maxSimultaneous" value="2" min="1" max="4" required>
+                                <label for="shockSize" class="form-label">Shock Size</label>
+                                <input type="number" class="form-control" id="shockSize" name="shockSize" value="0" step="any" required>
+                                <div class="form-text">Enter positive or negative value</div>
                             </div>
                             
                             <div class="mb-3">
@@ -113,7 +139,19 @@
         <div class="loading-text mt-3">Starting model run...</div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 for the regions multi-select
+            $('.select2-multi').select2({
+                placeholder: "Select regions",
+                closeOnSelect: false,
+                allowClear: true
+            });
+        });
+    </script>
     <script src="app.js"></script>
 </body>
 </html>
