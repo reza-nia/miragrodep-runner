@@ -97,10 +97,10 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log("Response from server:", data);
             
             // Update loading message to indicate initialization phase
-            document.querySelector('.loading-text').textContent = "Initializing GitHub workflow (please wait 10 seconds)...";
+            document.querySelector('.loading-text').textContent = "Initializing GitHub workflow (Please wait, this may take up to a couple of minutes)...";
             
             // Add delay before attempting to fetch run information
-            await new Promise(resolve => setTimeout(resolve, 10000)); // 10 second delay
+            await new Promise(resolve => setTimeout(resolve, 50000)); // 10 second delay
             
             document.querySelector('.loading-text').textContent = "Retrieving workflow status...";
             
