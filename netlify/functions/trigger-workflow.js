@@ -109,15 +109,17 @@ exports.handler = async function(event, context) {
       auth: GITHUB_TOKEN
     });
 
-    // Prepare workflow inputs - convert regions array to JSON string
-    //const workflowInputs = {
-    //  case: 'TAR',
-    //  baseline: 'df',
-    //  sim1: 'BASE',
-    //  totalSims: '1',
-    //  maxSimultaneous: '1',
-    //};
+    // Create the workflow inputs object (THIS IS THE KEY FIX)
+    // First, start with standard params we know the workflow accepts
+    const workflowInputs = {
+      run_mode: inputs.run_mode,
+      agg: inputs.agg,
+      proj: inputs.proj,
+      diag: inputs.diag,
+      pov: inputs.pov
+    };
 
+    // Add regions if provided (as JSON string)
     if (inputs.regions && Array.isArray(inputs.regions)) {
       workflowInputs.regions = JSON.stringify(inputs.regions);
       console.log("Prepared regions for workflow:", workflowInputs.regions);
@@ -125,19 +127,41 @@ exports.handler = async function(event, context) {
       console.warn("No regions array found in inputs");
       workflowInputs.regions = "[]";
     }
-    
-    // Get the current branch - fallback to main if not set
+
+    // Add shockSize if provided
+    if (inputs.shockSize) {
+      workflowInputs.shockSize = inputs.shockSize;
+      console.log("Added shock size:", inputs.shockSize);
+    }
+
+    // Use current branch or default to main
     const currentBranch = process.env.BRANCH || 'main';
     console.log("Using branch:", currentBranch);
 
-    // Trigger the workflow
-    await octokit.actions.createWorkflowDispatch({
-      owner: 'reza-nia',
-      repo: 'miragrodep-3',
-      workflow_id: 'run-miragrodep-model.yml',
-      ref: 'Beta1', 
-      inputs: workflowInputs
-    });
+    // Log what we're about to send to GitHub
+    console.log("Prepared workflow inputs:", workflowInputs);
+
+    try {
+      console.log("Attempting to call GitHub API...");
+      
+      // Trigger the workflow
+      await octokit.actions.createWorkflowDispatch({
+        owner: 'reza-nia',
+        repo: 'miragrodep-3',
+        workflow_id: 'run-miragrodep-model.yml',
+        ref: 'Beta1',
+        inputs: workflowInputs
+      });
+      
+      console.log("GitHub API call successful!");
+    } catch (error) {
+      console.error("GitHub API call failed:", {
+        message: error.message,
+        status: error.status || 'No status',
+        data: error.response?.data || 'No data'
+      });
+      throw error; // Re-throw to be caught by outer handler
+    }
     
     // Get the latest run
     const { data: runs } = await octokit.actions.listWorkflowRuns({
