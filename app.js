@@ -6,6 +6,36 @@ document.addEventListener('DOMContentLoaded', function() {
     const runDetails = document.getElementById('runDetails');
     const errorAlert = document.getElementById('errorAlert');
     const errorMessage = document.getElementById('errorMessage');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Initialize Select2 for the regions multi-select
+    $('.select2-multi').select2({
+        placeholder: "Select regions",
+        closeOnSelect: false,
+        allowClear: true
+    });
+    
+    // Function to validate the form and enable/disable the submit button
+    function validateForm() {
+        const regions = $('#regions').val();
+        const proj = $('#proj').val();
+        const shockSize = $('#shockSize').val();
+        
+        // Check if required fields are filled
+        if (regions && regions.length > 0 && proj && shockSize !== '') {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+    
+    // Add event listeners for validation
+    $('#proj').on('input', validateForm);
+    $('#shockSize').on('input', validateForm);
+    $('#regions').on('change', validateForm);
+    
+    // Also validate on page load
+    validateForm();
     
     // The API endpoint - update this to your Netlify domain
     const API_URL = 'https://miragrodep-runner.netlify.app/api/trigger-workflow';
@@ -19,11 +49,25 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Collect form data
         const formData = new FormData(form);
-        const inputs = Object.fromEntries(formData.entries());
+        
+        // Handle the regions array specially (Select2 multi-select)
+        const selectedRegions = $('#regions').val();
+        
+        // Convert FormData to an object
+        const inputsObj = {};
+        for (const [key, value] of formData.entries()) {
+            // Skip regions[] entries as we'll handle them separately
+            if (key !== 'regions[]') {
+                inputsObj[key] = value;
+            }
+        }
+        
+        // Add the regions array
+        inputsObj.regions = selectedRegions;
         
         // Extract email for notifications
-        const email = inputs.email;
-        delete inputs.email;
+        const email = inputsObj.email;
+        delete inputsObj.email;
         
         try {
             // Call the Netlify function
@@ -33,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    inputs: inputs,
+                    inputs: inputsObj,
                     email: email
                 })
             });

@@ -109,15 +109,27 @@ exports.handler = async function(event, context) {
       auth: GITHUB_TOKEN
     });
 
-
+    // Prepare workflow inputs - convert regions array to JSON string
+    const workflowInputs = { ...inputs };
+    if (inputs.regions && Array.isArray(inputs.regions)) {
+      workflowInputs.regions = JSON.stringify(inputs.regions);
+      console.log("Prepared regions for workflow:", workflowInputs.regions);
+    } else {
+      console.warn("No regions array found in inputs");
+      workflowInputs.regions = "[]";
+    }
+    
+    // Get the current branch - fallback to main if not set
+    const currentBranch = process.env.BRANCH || 'main';
+    console.log("Using branch:", currentBranch);
 
     // Trigger the workflow
     await octokit.actions.createWorkflowDispatch({
       owner: 'reza-nia',
       repo: 'miragrodep-3',
       workflow_id: 'run-miragrodep-model.yml',
-      ref: 'clDemo-1' , // or the branch your workflow is on
-      inputs: inputs
+      ref: 'Beta1', 
+      inputs: workflowInputs
     });
     
     // Get the latest run
