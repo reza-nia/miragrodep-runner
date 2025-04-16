@@ -110,7 +110,14 @@ exports.handler = async function(event, context) {
     });
 
     // Prepare workflow inputs - convert regions array to JSON string
-    const workflowInputs = { ...inputs };
+    const workflowInputs = {
+      case: 'TAR'
+      baseline: 'df'
+      sim1: 'BASE'
+      totalSims: '1'
+      maxSimultaneous: '1'
+    };
+
     if (inputs.regions && Array.isArray(inputs.regions)) {
       workflowInputs.regions = JSON.stringify(inputs.regions);
       console.log("Prepared regions for workflow:", workflowInputs.regions);
