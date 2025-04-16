@@ -171,9 +171,9 @@ exports.handler = async function(event, context) {
     
     // Get the latest run AFTER the delay
     const { data: runs } = await octokit.actions.listWorkflowRuns({
-      owner: repoOwner,
-      repo: repoName,
-      workflow_id: workflowId,
+      owner: 'reza-nia',
+      repo: 'miragrodep-3',
+      workflow_id: 'run-miragrodep-model.yml',
       per_page: 1
     });
     
