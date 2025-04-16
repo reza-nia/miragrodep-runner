@@ -112,7 +112,7 @@ exports.handler = async function(event, context) {
     // Prepare workflow inputs - convert regions array to JSON string
     const workflowInputs = {
       case: 'TAR',
-      baseline: 'df',
+      //baseline: 'df',
       sim1: 'BASE',
       totalSims: '1',
       maxSimultaneous: '1',
