@@ -163,13 +163,25 @@ exports.handler = async function(event, context) {
       throw error; // Re-throw to be caught by outer handler
     }
     
-    // Get the latest run
+    // IMPORTANT: Add delay here to allow GitHub to register the new run
+    console.log("Waiting for 15 seconds to allow GitHub to register the new run...");
+    await new Promise(resolve => setTimeout(resolve, 30000)); // 15-second delay
+    
+    console.log("Delay complete, now fetching latest workflow run...");
+    
+    // Get the latest run AFTER the delay
     const { data: runs } = await octokit.actions.listWorkflowRuns({
-      owner: 'reza-nia',
-      repo: 'miragrodep-3',
-      workflow_id: 'run-miragrodep-model.yml',
+      owner: repoOwner,
+      repo: repoName,
+      workflow_id: workflowId,
       per_page: 1
     });
+    
+    if (runs.workflow_runs.length > 0) {
+      console.log("Latest run found:", runs.workflow_runs[0].id);
+    } else {
+      console.log("No workflow runs found after delay");
+    }
     
     return {
       statusCode: 200,
