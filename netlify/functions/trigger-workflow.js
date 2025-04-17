@@ -149,7 +149,7 @@ exports.handler = async function(event, context) {
         owner: 'reza-nia',
         repo: 'miragrodep-3',
         workflow_id: 'run-miragrodep-model.yml',
-        ref: 'Beta1',
+        ref: 'beta02',
         inputs: workflowInputs
       });
       
