@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Add description for the aggregation levels
-    $('#agg').after('<div class="form-text">AggT1: Regional level (18 regions) | AggT2: Country level (35 regions)</div>');
+    $('#agg').after('<div class="form-text">AggT1: 18 regions | AggT2: 34 regions</div>');
     
     // Initialize regions with current aggregation value
     updateRegions($('#agg').val());
