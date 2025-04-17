@@ -15,6 +15,96 @@ document.addEventListener('DOMContentLoaded', function() {
         allowClear: true
     });
     
+    // Define region options for each aggregation level
+    const regionsByAgg = {
+        "AggT1": [
+            { value: "OCEANIA", text: "OCEANIA - Australia, New Zealand, and other Oceania" },
+            { value: "CHINA", text: "CHINA - China and Hong Kong" },
+            { value: "REASIA", text: "REASIA - Japan, South Korea, Taiwan" },
+            { value: "RoCIS", text: "RoCIS - Rest of Commonwealth of Independent States (Belarus, Serbia, etc.)" },
+            { value: "RoAsia", text: "RoAsia - Rest of Asia (Singapore, Malaysia, Nepal, etc.)" },
+            { value: "SEAsia", text: "SEAsia - Southeast Asia (Indonesia, Philippines, Thailand, Vietnam, etc.)" },
+            { value: "IND", text: "IND - India" },
+            { value: "NAmerica", text: "NAmerica - North America (USA, Canada, Mexico)" },
+            { value: "SAmerica", text: "SAmerica - South America (Brazil, Argentina, Chile, etc.)" },
+            { value: "CAM", text: "CAM - Central America (Costa Rica, Guatemala, Honduras, etc.)" },
+            { value: "EU28", text: "EU28 - 28 European Union member countries" },
+            { value: "RUS", text: "RUS - Russia" },
+            { value: "UKR", text: "UKR - Ukraine" },
+            { value: "RoMENA", text: "RoMENA - Middle East & North Africa (Iran, Saudi Arabia, UAE, etc.)" },
+            { value: "RoWCAfr", text: "RoWCAfr - West & Central Africa (Ghana, Senegal, Cameroon, etc.)" },
+            { value: "EAFRICA", text: "EAFRICA - East Africa (Kenya, Tanzania, Uganda, etc.)" },
+            { value: "SACU", text: "SACU - Southern African Customs Union (South Africa, Botswana, Namibia, etc.)" }
+        ],
+        "AggT2": [
+            { value: "OCEANIA", text: "OCEANIA - Australia, New Zealand, and other Oceania" },
+            { value: "CHINA", text: "CHINA - China and Hong Kong" },
+            { value: "REASIA", text: "REASIA - Japan, South Korea, Taiwan" },
+            { value: "RoCIS", text: "RoCIS - Rest of Commonwealth of Independent States (Belarus, Serbia, etc.)" },
+            { value: "RoAsia", text: "RoAsia - Rest of Asia (Singapore, Malaysia, Nepal, etc.)" },
+            { value: "IDN", text: "IDN - Indonesia" },
+            { value: "PHL", text: "PHL - Philippines" },
+            { value: "THA", text: "THA - Thailand" },
+            { value: "VNM", text: "VNM - Vietnam" },
+            { value: "BGD", text: "BGD - Bangladesh" },
+            { value: "IND", text: "IND - India" },
+            { value: "PAK", text: "PAK - Pakistan" },
+            { value: "CAN", text: "CAN - Canada" },
+            { value: "USA", text: "USA - United States and territories" },
+            { value: "MEX", text: "MEX - Mexico" },
+            { value: "ARG", text: "ARG - Argentina" },
+            { value: "Andean", text: "Andean - Bolivia, Chile, Colombia, Ecuador, Peru" },
+            { value: "BRA", text: "BRA - Brazil" },
+            { value: "RoMERCO", text: "RoMERCO - Paraguay, Uruguay" },
+            { value: "RoLAC", text: "RoLAC - Venezuela, Dominican Republic, Jamaica, Haiti, etc." },
+            { value: "CAM", text: "CAM - Costa Rica, Guatemala, Honduras, Nicaragua, Panama, etc." },
+            { value: "EU28", text: "EU28 - 28 European Union member countries" },
+            { value: "RoEFTA", text: "RoEFTA - Norway, Switzerland, and other EFTA" },
+            { value: "RUS", text: "RUS - Russia" },
+            { value: "UKR", text: "UKR - Ukraine" },
+            { value: "KAZ", text: "KAZ - Kazakhstan" },
+            { value: "RoMENA", text: "RoMENA - Middle East & North Africa (Iran, Saudi Arabia, UAE, etc.)" },
+            { value: "TUR", text: "TUR - Turkey" },
+            { value: "EGY", text: "EGY - Egypt" },
+            { value: "RoWCAfr", text: "RoWCAfr - West & Central Africa (Ghana, Senegal, Cameroon, etc.)" },
+            { value: "NGA", text: "NGA - Nigeria" },
+            { value: "ETH", text: "ETH - Ethiopia" },
+            { value: "EAFRICA", text: "EAFRICA - East Africa (Kenya, Tanzania, Uganda, etc.)" },
+            { value: "SACU", text: "SACU - Southern African Customs Union (South Africa, Botswana, Namibia, etc.)" }
+        ]
+    };
+
+    // Function to update regions dropdown based on aggregation selection
+    function updateRegions(aggValue) {
+        const regionsSelect = $('#regions');
+        
+        // Clear existing options
+        regionsSelect.empty();
+        
+        // Add new options based on selected aggregation
+        const regions = regionsByAgg[aggValue] || regionsByAgg["AggT2"]; // Default to AggT2 if not found
+        regions.forEach(region => {
+            regionsSelect.append(new Option(region.text, region.value, false, false));
+        });
+        
+        // Refresh Select2 without any selections
+        regionsSelect.val(null).trigger('change');
+        
+        // Run validation after changing regions
+        validateForm();
+    }
+    
+    // Update regions when aggregation changes
+    $('#agg').on('change', function() {
+        updateRegions($(this).val());
+    });
+    
+    // Add description for the aggregation levels
+    $('#agg').after('<div class="form-text">AggT1: Regional level (18 regions) | AggT2: Country level (35 regions)</div>');
+    
+    // Initialize regions with current aggregation value
+    updateRegions($('#agg').val());
+    
     // Function to validate the form and enable/disable the submit button
     function validateForm() {
         const regions = $('#regions').val();

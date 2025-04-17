@@ -21,15 +21,15 @@
                             <div class="mb-3">
                                 <label for="run_mode" class="form-label">Run Mode</label>
                                 <select class="form-select" id="run_mode" name="run_mode" required>
-                                    <option value="full">Full (all steps)</option>
-                                    <option value="sim_only">Simulations Only</option>
+                                    <option value="full">Full (Includes aggregation and reference scenario run)</option>
+                                    <option value="sim_only">Simulations Only (Select if you have already run the same aggregation and shock level in full mode)</option>
                                 </select>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="agg" class="form-label">Aggregation Level</label>
                                 <select class="form-select" id="agg" name="agg" required>
-                                    <option value="AggT2">AggT2</option>
+                                    <option value="AggT2">AggT2 (Default)</option>
                                     <option value="AggT1">AggT1</option>
                                 </select>
                             </div>
@@ -40,50 +40,17 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="regions" class="form-label">Regions</label>
+                                <label for="regions" class="form-label">Shock regions</label>
                                 <select class="form-select select2-multi" id="regions" name="regions[]" multiple required>
-                                    <option value="OCEANIA">OCEANIA - Australia, New Zealand, and other Oceania</option>
-                                    <option value="CHINA">CHINA - China and Hong Kong</option>
-                                    <option value="REASIA">REASIA - Japan, South Korea, Taiwan</option>
-                                    <option value="RoCIS">RoCIS - Rest of Commonwealth of Independent States (Belarus, Serbia, etc.)</option>
-                                    <option value="RoAsia">RoAsia - Rest of Asia (Singapore, Malaysia, Nepal, etc.)</option>
-                                    <option value="IDN">IDN - Indonesia</option>
-                                    <option value="PHL">PHL - Philippines</option>
-                                    <option value="THA">THA - Thailand</option>
-                                    <option value="VNM">VNM - Vietnam</option>
-                                    <option value="BGD">BGD - Bangladesh</option>
-                                    <option value="IND">IND - India</option>
-                                    <option value="PAK">PAK - Pakistan</option>
-                                    <option value="CAN">CAN - Canada</option>
-                                    <option value="USA">USA - United States and territories</option>
-                                    <option value="MEX">MEX - Mexico</option>
-                                    <option value="ARG">ARG - Argentina</option>
-                                    <option value="Andean">Andean - Bolivia, Chile, Colombia, Ecuador, Peru</option>
-                                    <option value="BRA">BRA - Brazil</option>
-                                    <option value="RoMERCO">RoMERCO - Paraguay, Uruguay</option>
-                                    <option value="RoLAC">RoLAC - Venezuela, Dominican Republic, Jamaica, Haiti, etc.</option>
-                                    <option value="CAM">CAM - Costa Rica, Guatemala, Honduras, Nicaragua, Panama, etc.</option>
-                                    <option value="EU28">EU28 - 28 European Union member countries</option>
-                                    <option value="RoEFTA">RoEFTA - Norway, Switzerland, and other EFTA</option>
-                                    <option value="RUS">RUS - Russia</option>
-                                    <option value="UKR">UKR - Ukraine</option>
-                                    <option value="KAZ">KAZ - Kazakhstan</option>
-                                    <option value="RoMENA">RoMENA - Middle East & North Africa (Iran, Saudi Arabia, UAE, etc.)</option>
-                                    <option value="TUR">TUR - Turkey</option>
-                                    <option value="EGY">EGY - Egypt</option>
-                                    <option value="RoWCAfr">RoWCAfr - West & Central Africa (Ghana, Senegal, Cameroon, etc.)</option>
-                                    <option value="NGA">NGA - Nigeria</option>
-                                    <option value="ETH">ETH - Ethiopia</option>
-                                    <option value="EAFRICA">EAFRICA - East Africa (Kenya, Tanzania, Uganda, etc.)</option>
-                                    <option value="SACU">SACU - Southern African Customs Union (South Africa, Botswana, Namibia, etc.)</option>
+                                    <!-- Options will be populated by JavaScript -->
                                 </select>
-                                <div class="form-text">Select one or more regions for the simulation</div>
+                                <div class="form-text">Select one or more regions you want to apply shocks to in the simulation.</div>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="shockSize" class="form-label">Shock Size (0-100: 0 no shock, 100 complete failure)</label>
+                                <label for="shockSize" class="form-label">Shock Size (0-100)</label>
                                 <input type="number" class="form-control" id="shockSize" name="shockSize" value="10" step="any" required>
-                                <div class="form-text">Enter positive or negative value</div>
+                                <div class="form-text">: % decrease in agricultural productivity: 0 = no shock, 100 = complete failure</div>
                             </div>
                             
                             <div class="mb-3">
