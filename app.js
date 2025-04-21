@@ -236,8 +236,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Extract email for notifications
         const email = inputsObj.email;
-        delete inputsObj.email;
-        
         // Save email locally if provided
         if (email) {
             localStorage.setItem('modelRunnerEmail', email);

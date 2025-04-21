@@ -134,6 +134,12 @@ exports.handler = async function(event, context) {
       console.log("Added shock size:", inputs.shockSize);
     }
 
+    // Add email if provided
+    if (inputs.email) {
+      workflowInputs.email = inputs.email;
+      console.log("Added email to workflow inputs:", inputs.email);
+    }
+
     // Use current branch or default to main
     const currentBranch = process.env.BRANCH || 'main';
     console.log("Using branch:", currentBranch);
